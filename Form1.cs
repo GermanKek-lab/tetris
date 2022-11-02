@@ -34,9 +34,9 @@ namespace WindowsFormsApp3
                                     {1, 0, 0, 0}};
 
         public int[,] tetramin3 = { {0, 0, 0, 0},
-                                    {0, 0, 1, 1},
-                                    {0, 0, 0, 1},
-                                    {0, 0, 0, 1}};
+                                    {1, 1, 0, 0},
+                                    {0, 1, 0, 0},
+                                    {0, 1, 0, 0}};
 
         public int[,] tetramin4 = { {0, 0, 0, 0},
                                     {0, 1, 0, 0},
@@ -44,18 +44,18 @@ namespace WindowsFormsApp3
                                     {0, 0, 0, 0}};
 
         public int[,] tetramin5 = { {0, 0, 0, 0},
-                                    {0, 1, 0, 0},
-                                    {0, 1, 1, 0},
-                                    {0, 0, 1, 0}};
-
-        public int[,] tetramin6 = { {0, 0, 0, 0},
-                                    {0, 0, 1, 0},
-                                    {0, 1, 1, 0},
+                                    {1, 0, 0, 0},
+                                    {1, 1, 0, 0},
                                     {0, 1, 0, 0}};
 
+        public int[,] tetramin6 = { {0, 0, 0, 0},
+                                    {0, 1, 0, 0},
+                                    {1, 1, 0, 0},
+                                    {1, 0, 0, 0}};
+
         public int[,] tetramin7 = { {0, 0, 0, 0},
-                                    {0, 1, 1, 0},
-                                    {0, 1, 1, 0},
+                                    {1, 1, 0, 0},
+                                    {1, 1, 0, 0},
                                     {0, 0, 0, 0}};
 
 
@@ -64,6 +64,8 @@ namespace WindowsFormsApp3
         public bool flag_left = true;
         public bool flag_move_left = true;
         public bool flag_move_right = true;
+        public int x_tetramina = 3;
+        public int y_tetramina = 0;
 
         public Form1()
         {
@@ -150,15 +152,18 @@ namespace WindowsFormsApp3
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    screen[i, j] = currentArray[i, j];
+                    screen[i, j + 3] = currentArray[i, j];
                 }
             }
         }
 
+        int cnt_right = 0;//debug
+        int cnt_left = 0;
+
         public void CheckBlock()
         {
-            int cnt_right = 0;
-            int cnt_left = 0;
+            cnt_right = 0;
+            cnt_left = 0;
 
 
             for (int i = 0; i < 25; i++)
@@ -176,14 +181,20 @@ namespace WindowsFormsApp3
                             flag_go = true;
                         }
 
-                        if ((j + 1 <= 9) && (screen[i, j + 1] == 0))
+                        if (j + 1 <= 9)
                         {
-                            cnt_left++;
+                            if (screen[i, j + 1] <= 1)
+                            {
+                                cnt_right++;
+                            }
                         }
 
-                        if ((j - 1 >= 0) && (screen[i, j - 1] == 0))
+                        if (j - 1 >= 0)
                         {
-                            cnt_right++;
+                            if (screen[i, j - 1] <= 1)
+                            {
+                                cnt_left++;
+                            }
                         }
 
                     }
@@ -223,7 +234,7 @@ namespace WindowsFormsApp3
                     }
                 }
             }
-             
+            y_tetramina++;
         }
 
         public void StopBlock()
@@ -283,6 +294,7 @@ namespace WindowsFormsApp3
             Controls.Add(third);
             Controls.Add(four);*/
 
+            CheckBlock();
 
             if ((flag_go) && (blockstastus))
             {
@@ -294,28 +306,99 @@ namespace WindowsFormsApp3
             {
                 StopBlock();
                 CreateNewBlock();
+                y_tetramina = 0;
+                x_tetramina = 3;
                 blockstastus = true;
             }
 
+            label1.Text = y_tetramina.ToString();//debug
+            label2.Text = x_tetramina.ToString();//debug
             flag_tick = 0;
 
         }
 
-        public void RightLeft(int c)
+        public void MoveRight(int c)
         {
+            int cnt_move = 0;
+
             for (int i = 24; i >= 0; i--)
             {
                 for (int j = 9; j >= 0; j--)
                 {
                     if (screen[i, j] == 1)
                     {
-                        screen[i, j] = 0;
-                        screen[i, j + c] = 1;
-                    }
+                        if (cnt_move < 4)
+                        {
+                            screen[i, j] = 0;
+                            screen[i, j + c] = 1;
+                            cnt_move++;
+                        }
                     }
                 }
             }
+            x_tetramina++;
+        }
 
+        public void MoveLeft(int c)
+        {
+            int cnt_move = 0;
+
+            for (int i = 0; i <= 24; i++)
+            {
+                for (int j = 0; j <= 9; j++)
+                {
+                    if (screen[i, j] == 1)
+                    {
+                        if (cnt_move < 4)
+                        {
+                            screen[i, j] = 0;
+                            screen[i, j + c] = 1;
+                            cnt_move++;
+                        }
+                    }
+                }
+            }
+            x_tetramina--;
+        }
+
+
+
+        public int[,] copy_tetramina = new int[4, 4];
+
+        public void CopyTetraMina()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    copy_tetramina[i, j] = screen[i + y_tetramina, j + x_tetramina];
+                }
+            }
+        }
+
+        public void Turn()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    int buffer = 0;
+                    buffer = copy_tetramina[i, j];
+                    copy_tetramina[i, j] = copy_tetramina[j, i];
+                    copy_tetramina[j, i] = buffer;
+                }
+            }
+        }
+
+        public void ReturnTetraMina()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    screen[i + y_tetramina, j + x_tetramina] = copy_tetramina[i, j];
+                }
+            }
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -328,7 +411,7 @@ namespace WindowsFormsApp3
                         if (flag_right)
                         {
                             flag_tick = 1;
-                            RightLeft(flag_tick);
+                            MoveRight(flag_tick);
                         }
                         break;
 
@@ -336,11 +419,19 @@ namespace WindowsFormsApp3
                         if (flag_left)
                         {
                             flag_tick = -1;
-                            RightLeft(flag_tick);
+                            MoveLeft(flag_tick);
                         }
+                        break;
+
+                    case Keys.W:
+                        CopyTetraMina();
+                        Turn();
+                        ReturnTetraMina();
                         break;
                 }
             }
         }
     }
+
+    
 }
